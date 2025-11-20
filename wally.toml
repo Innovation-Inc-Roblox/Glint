@@ -1,0 +1,13 @@
+[package]
+name = "innovation-inc-roblox/glint"
+repository = "https://github.com/Innovation-Inc-Roblox/Railgun"
+description = "Indicates if you can chat with other players."
+license = "MIT"
+authors = ["TheNexusAvenger"]
+version = "1.0.0"
+
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+exclude = ["**"]
+include = ["src", "src/*", "default.project.json", "wally.lock", "wally.toml"]

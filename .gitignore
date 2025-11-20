@@ -1,0 +1,18 @@
+# VS Code files
+.vscode/*
+
+# Roblox files
+*.rbxlx
+*.rbxmx
+*.rbxm
+*.rbxl
+
+# Lock files
+*.lock
+
+# Rojo sourcemaps
+sourcemap.json
+
+# OS styling
+desktop.ini
+.DS_Store
