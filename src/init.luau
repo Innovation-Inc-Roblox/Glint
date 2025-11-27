@@ -3,8 +3,14 @@
 
 local RunService = game:GetService("RunService")
 
-local Glint = {}
+local IconFactory = require(script:WaitForChild("IconFactory"))
+local PlayerIcons = require(script:WaitForChild("PlayerIcons"))
 
+local Glint = {}
+Glint.IconFactory = IconFactory
+Glint.PlayerIcons = PlayerIcons
+
+export type IconFactory = IconFactory.IconFactory
 export type Glint = typeof(Glint)
 
 
@@ -17,7 +23,8 @@ function Glint.Initialize(self: Glint): ()
         --Start replication.
         require(script:WaitForChild("CanChatReplication"))
     else
-        --TODO
+        --Create the icons.
+        PlayerIcons:Initialize()
     end
 end
 
