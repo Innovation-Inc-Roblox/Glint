@@ -66,7 +66,9 @@ function PlayerIcons._UpdateCanChatIds(self: PlayerIcons, CanChatIds: string?): 
     self._CanChatIds = {}
     if CanChatIds then
         for _, Id in string.split(CanChatIds, ",") do
-            self._CanChatIds[tonumber(Id) :: number] = true
+            local IdNumber = tonumber(Id)
+            if not IdNumber then continue end
+            self._CanChatIds[IdNumber] = true
         end
     end
 
