@@ -1,6 +1,6 @@
 [package]
 name = "innovation-inc-roblox/glint"
-repository = "https://github.com/Innovation-Inc-Roblox/Railgun"
+repository = "https://github.com/Innovation-Inc-Roblox/Glint"
 description = "Indicates if you can chat with other players."
 license = "MIT"
 authors = ["TheNexusAvenger"]
