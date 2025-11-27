@@ -20,7 +20,7 @@ export type PlayerIcons = typeof(PlayerIcons)
 Returns the adornee for a player.
 This can yield.
 --]]
-function PlayerIcons.GetAdornee(self: PlayerIcons, Player: Player): BasePart?
+function PlayerIcons.GetAdornee(Player: Player): BasePart?
     if not Player.Character then return nil end
     return Player.Character:WaitForChild("Head", 10 ^ 99) :: BasePart
 end
@@ -28,7 +28,7 @@ end
 --[[
 Returns an event for a player to update their icon's adornee.
 --]]
-function PlayerIcons.GetAdorneeUpdateEvent(self: PlayerIcons, Player: Player): RBXScriptSignal
+function PlayerIcons.GetAdorneeUpdateEvent(Player: Player): RBXScriptSignal
     return Player.CharacterAdded
 end
 
@@ -46,7 +46,7 @@ function PlayerIcons._UpdateIcon(self: PlayerIcons, Player: Player): ()
     end
 
     --Update the icon if it exists, or create a new one.
-    local Adornee = self:GetAdornee(Player)
+    local Adornee = self.GetAdornee(Player)
     local ExistingIcon = self._PlayerIcons[Player]
     if ExistingIcon then
         ExistingIcon.Adornee = Adornee
@@ -82,7 +82,7 @@ Initializes a player.
 function PlayerIcons._InitializePlayer(self: PlayerIcons, Player: Player): ()
     --Connect the icon adornee changing.
     local PlayerEventConnections = {}
-    table.insert(PlayerEventConnections, self:GetAdorneeUpdateEvent(Player):Connect(function()
+    table.insert(PlayerEventConnections, self.GetAdorneeUpdateEvent(Player):Connect(function()
         self:_UpdateIcon(Player)
     end))
     self._PlayerEventConnections[Player] = PlayerEventConnections

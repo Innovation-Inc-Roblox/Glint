@@ -23,7 +23,7 @@ return function()
 
         afterEach(function()
             PlayerIcons.GetAdornee = OriginalGetAdornee
-            PlayerIcons._Players = Players
+            PlayerIcons._Players = Players :: any
             PlayerIcons._IconsContainer:ClearAllChildren()
             PlayerIcons._PlayerIcons = {}
             PlayerIcons._CanChatIds = {}
