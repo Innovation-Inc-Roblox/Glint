@@ -18,7 +18,7 @@ export type CanChatReplication = typeof(CanChatReplication)
 Returns if 2 players can chat with each other.
 --]]
 function CanChatReplication._CanChat(self: CanChatReplication, Player1: Player, Player2: Player): boolean
-    return TextChatService:CanUsersChatAsync(Player1.UserId, Player2.UserId)
+    return Player1 == Player2 or TextChatService:CanUsersChatAsync(Player1.UserId, Player2.UserId)
 end
 
 --[[
