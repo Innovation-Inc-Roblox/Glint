@@ -1,6 +1,10 @@
 --Replicates whether users can chat with each other, since it is server-side.
 --!strict
 
+local REFRESH_CAN_CHAT_DELAY_SECONDS = 15
+local REFRESH_CAN_CHAT_PLAYERS_PER_STEP = 5
+local REFRESH_CAN_CHAT_STEP_DELAY_SECONDS = 1
+
 local Players = game:GetService("Players")
 local TextChatService = game:GetService("TextChatService")
 local RunService = game:GetService("RunService")
@@ -28,6 +32,34 @@ function CanChatReplication._UpdateReplicatedValues(self: CanChatReplication): (
     for Player, CanChatResults in self._CanChatCache do
         Player:SetAttribute("CanChatIds", table.concat(CanChatResults, ","))
     end
+end
+
+--[[
+Refreshes the players a player can chat with.
+--]]
+function CanChatReplication._RefreshPlayer(self: CanChatReplication, Player: Player): ()
+    --Return if the player is not initialized.
+    local CanChatResults = self._CanChatCache[Player]
+    if not CanChatResults then return end
+    
+    --Update the can chat results.
+    for OtherPlayer, OtherPlayerCanChatResults in self._CanChatCache do
+        if Player == OtherPlayer then continue end
+        if table.find(CanChatResults, OtherPlayer.UserId) then continue end
+        if not self:_CanChat(Player, OtherPlayer) then continue end
+        table.insert(CanChatResults, OtherPlayer.UserId)
+        table.insert(OtherPlayerCanChatResults, Player.UserId)
+    end
+end
+
+--[[
+Refreshes the players a player can chat with for a list a players.
+--]]
+function CanChatReplication._RefreshPlayers(self: CanChatReplication, PlayersToUpdate: {Player}): ()
+    for _, Player in PlayersToUpdate do
+        self:_RefreshPlayer(Player)
+    end
+    self:_UpdateReplicatedValues()
 end
 
 --[[
@@ -87,6 +119,30 @@ if RunService:IsRunning() then
     --Connect players leaving.
     Players.PlayerRemoving:Connect(function(Player)
         CanChatReplication:_UninitializePlayer(Player)
+    end)
+
+    --Refresh can chat lists in the background.
+    --Players are able to verify after joining, and the API seems to default to false on join and eventually return true.
+    task.spawn(function()
+        while true do
+            --Wait to refresh.
+            task.wait(REFRESH_CAN_CHAT_DELAY_SECONDS)
+
+            --Refresh the players in batches.
+            --This probably isn't needed, but it is a bit more friendly for resource usage on larger servers.
+            local PlayerBatches = {{}}
+            for _, Player in Players:GetPlayers() do
+                if #PlayerBatches[#PlayerBatches] >= REFRESH_CAN_CHAT_PLAYERS_PER_STEP then
+                    table.insert(PlayerBatches, {} :: {Player})
+                end
+                table.insert(PlayerBatches[#PlayerBatches], Player)
+            end
+
+            for _, PlayerBatch in PlayerBatches do
+                CanChatReplication:_RefreshPlayers(PlayerBatch)
+                task.wait(REFRESH_CAN_CHAT_STEP_DELAY_SECONDS)
+            end
+        end
     end)
 end
 
