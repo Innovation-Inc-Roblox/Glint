@@ -4,7 +4,7 @@ repository = "https://github.com/Innovation-Inc-Roblox/Glint"
 description = "Indicates if you can chat with other players."
 license = "MIT"
 authors = ["TheNexusAvenger"]
-version = "1.0.1"
+version = "1.1.0"
 
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"

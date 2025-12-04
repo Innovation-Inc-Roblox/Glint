@@ -29,6 +29,7 @@ local Glint = require(ReplicatedStorage.Glint)
 Glint.IconFactory.IconBillboardGuiSize = UDim2.new(0, 50, 0, 50)
 Glint.IconFactory.IconBillboardGuiStudsOffset = Vector3.new(0, 5, 0)
 Glint.IconFactory.IconMaxDistance = 50
+Glint.IconFactory.IconLightInfluence = 1
 
 --Changes the icon images.
 Glint.IconFactory.IconParts = {
