@@ -45,6 +45,35 @@ return function()
             expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
         end)
 
+        it("should hide icons when the adornee is hidden.", function()
+            PlayerIcons:_UpdateIcon(MockPlayer)
+
+            expect(#PlayerIcons._IconsContainer:GetChildren()).to.equal(1)
+            expect(PlayerIcons._IconsContainer:GetChildren()[1]).to.equal(PlayerIcons._PlayerIcons[MockPlayer])
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+
+            MockAdornee.Transparency = 1
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(nil)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(false)
+            
+            MockAdornee.Transparency = 0
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(true)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+
+            MockAdornee.LocalTransparencyModifier = 1
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(nil)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(false)
+            
+            MockAdornee.LocalTransparencyModifier = 0
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(true)
+        end)
+
         it("should update icons for players who can't chat.", function()
             PlayerIcons:_UpdateIcon(MockPlayer)
             MockAdornee = Instance.new("Part")
@@ -53,6 +82,27 @@ return function()
             expect(#PlayerIcons._IconsContainer:GetChildren()).to.equal(1)
             expect(PlayerIcons._IconsContainer:GetChildren()[1]).to.equal(PlayerIcons._PlayerIcons[MockPlayer])
             expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+
+            MockAdornee.Transparency = 1
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(nil)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(false)
+            
+            MockAdornee.Transparency = 0
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(true)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+
+            MockAdornee.LocalTransparencyModifier = 1
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(nil)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(false)
+            
+            MockAdornee.LocalTransparencyModifier = 0
+            task.wait()
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Adornee).to.equal(MockAdornee)
+            expect(PlayerIcons._PlayerIcons[MockPlayer].Enabled).to.equal(true)
         end)
 
         it("should remove icons for players who can chat.", function()

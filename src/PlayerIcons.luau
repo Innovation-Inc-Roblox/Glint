@@ -10,6 +10,7 @@ PlayerIcons._Players = Players
 PlayerIcons._IconsContainer = Instance.new("Folder") :: Instance
 PlayerIcons._PlayerEventConnections = {} :: {[Player]: {RBXScriptConnection}}
 PlayerIcons._PlayerIcons = {} :: {[Player]: BillboardGui}
+PlayerIcons._PlayerIconAdorneeEvents = {} :: {[Player]: {Adornee: BasePart?, Connections: {RBXScriptConnection}}}
 PlayerIcons._CanChatIds = {} :: {[number]: boolean}
 
 export type PlayerIcons = typeof(PlayerIcons)
@@ -33,28 +34,78 @@ function PlayerIcons.GetAdorneeUpdateEvent(Player: Player): RBXScriptSignal
 end
 
 --[[
+Removes the icon for a player.
+--]]
+function PlayerIcons._RemoveIcon(self: PlayerIcons, Player: Player): ()
+    if self._PlayerIcons[Player] then
+        self._PlayerIcons[Player]:Destroy()
+        self._PlayerIcons[Player] = nil
+    end
+    if self._PlayerIconAdorneeEvents[Player] then
+        for _, Connection in self._PlayerIconAdorneeEvents[Player].Connections do
+            Connection:Disconnect()
+        end
+        self._PlayerIconAdorneeEvents[Player] = nil
+    end
+end
+
+--[[
 Updates the icon for a player.
 --]]
 function PlayerIcons._UpdateIcon(self: PlayerIcons, Player: Player): ()
     --Remove the icon if one exists and the player can chat.
     if self._CanChatIds[Player.UserId] then
-        if self._PlayerIcons[Player] then
-            self._PlayerIcons[Player]:Destroy()
-            self._PlayerIcons[Player] = nil
-        end
+        self:_RemoveIcon(Player)
         return
     end
 
     --Update the icon if it exists, or create a new one.
+    --The icon is not shown if the adornee is hidden.
+    --Adornee and IconAdornee are separate to ensure the adornee can have events connected later on.
     local Adornee = self.GetAdornee(Player)
+    local IconAdornee = Adornee
+    if Adornee and (Adornee.Transparency >= 1 or Adornee.LocalTransparencyModifier >= 1) then
+        IconAdornee = nil
+    end
     local ExistingIcon = self._PlayerIcons[Player]
     if ExistingIcon then
-        ExistingIcon.Adornee = Adornee
-    elseif Adornee then
+        ExistingIcon.Enabled = (IconAdornee ~= nil)
+        ExistingIcon.Adornee = IconAdornee
+    elseif IconAdornee then
         local NewIcon = IconFactory.CreateIcon(Player)
-        NewIcon.Adornee = Adornee
+        NewIcon.Adornee = IconAdornee
         NewIcon.Parent = self._IconsContainer
         self._PlayerIcons[Player] = NewIcon
+    end
+
+    --Connect updates to the transparency if the adornee changed.
+    local CurrentPlayerIconAdorneeEvents = self._PlayerIconAdorneeEvents[Player]
+    if not CurrentPlayerIconAdorneeEvents or CurrentPlayerIconAdorneeEvents.Adornee ~= Adornee then
+        --Prepare storing event connections if this is the first setup.
+        if not CurrentPlayerIconAdorneeEvents then
+            CurrentPlayerIconAdorneeEvents = {Adornee = Adornee, Connections = {}}
+            self._PlayerIconAdorneeEvents[Player] = CurrentPlayerIconAdorneeEvents
+        end
+        if not CurrentPlayerIconAdorneeEvents then return end --Only for type checking.
+
+        --Disconnect existing events if the adornee changed.
+        if CurrentPlayerIconAdorneeEvents.Adornee ~= Adornee then
+            for _, EventConnection in CurrentPlayerIconAdorneeEvents.Connections do
+                EventConnection:Disconnect()
+            end
+            table.clear(CurrentPlayerIconAdorneeEvents.Connections)
+            CurrentPlayerIconAdorneeEvents.Adornee = Adornee
+        end
+
+        --Connect new events.
+        if Adornee then
+            table.insert(CurrentPlayerIconAdorneeEvents.Connections, Adornee:GetPropertyChangedSignal("Transparency"):Connect(function()
+                self:_UpdateIcon(Player)
+            end))
+            table.insert(CurrentPlayerIconAdorneeEvents.Connections, Adornee:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
+                self:_UpdateIcon(Player)
+            end))
+        end
     end
 end
 
@@ -105,9 +156,7 @@ function PlayerIcons._UninitializePlayer(self: PlayerIcons, Player: Player): ()
     PlayerIcons._PlayerEventConnections[Player] = nil
 
     --Remove any icons.
-    if not self._PlayerIcons[Player] then return end
-    self._PlayerIcons[Player]:Destroy()
-    self._PlayerIcons[Player] = nil
+    self:_RemoveIcon(Player)
 end
 
 --[[
