@@ -22,7 +22,14 @@ export type CanChatReplication = typeof(CanChatReplication)
 Returns if 2 players can chat with each other.
 --]]
 function CanChatReplication._CanChat(self: CanChatReplication, Player1: Player, Player2: Player): boolean
-    return Player1 == Player2 or TextChatService:CanUsersChatAsync(Player1.UserId, Player2.UserId)
+    if Player1 == Player2 then return true end
+    local CanChat = false
+    xpcall(function()
+        CanChat = TextChatService:CanUsersChatAsync(Player1.UserId, Player2.UserId)
+    end, function(ErrorMessage)
+        warn(`[Glint] Failed to check if players {Player1.Name} ({Player1.UserId}) and {Player2.Name} ({Player2.UserId}) can chat because: {ErrorMessage}`)
+    end)
+    return CanChat
 end
 
 --[[
