@@ -115,19 +115,10 @@ return function()
             expect(PlayerIcons._PlayerIcons[MockPlayer]).to.equal(nil)
         end)
 
-        it("should clear can chat ids when unset.", function()
-            PlayerIcons._CanChatIds[1] = true
-            PlayerIcons._CanChatIds[3] = true
-            PlayerIcons:_UpdateCanChatIds(nil)
-
-            expect(PlayerIcons._CanChatIds[1]).to.equal(nil)
-            expect(PlayerIcons._CanChatIds[3]).to.equal(nil)
-        end)
-
         it("should update can chat ids when set.", function()
             PlayerIcons._CanChatIds[1] = true
             PlayerIcons._CanChatIds[3] = true
-            PlayerIcons:_UpdateCanChatIds("1,2")
+            PlayerIcons:_UpdateCanChatIds({1, 2})
 
             expect(PlayerIcons._CanChatIds[1]).to.equal(true)
             expect(PlayerIcons._CanChatIds[2]).to.equal(true)

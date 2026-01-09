@@ -112,15 +112,11 @@ end
 --[[
 Updates the can chat ids.
 --]]
-function PlayerIcons._UpdateCanChatIds(self: PlayerIcons, CanChatIds: string?): ()
+function PlayerIcons._UpdateCanChatIds(self: PlayerIcons, CanChatIds: {number}): ()
     --Update the ids.
     self._CanChatIds = {}
-    if CanChatIds then
-        for _, Id in string.split(CanChatIds, ",") do
-            local IdNumber = tonumber(Id)
-            if not IdNumber then continue end
-            self._CanChatIds[IdNumber] = true
-        end
+    for _, Id in CanChatIds do
+        self._CanChatIds[Id] = true
     end
 
     --Update the players.
@@ -183,10 +179,14 @@ function PlayerIcons.Initialize(self: PlayerIcons): ()
     end)
 
     --Connect changes to the can chat players.
-    LocalPlayer:GetAttributeChangedSignal("CanChatIds"):Connect(function()
-        PlayerIcons:_UpdateCanChatIds(LocalPlayer:GetAttribute("CanChatIds") :: string?)
+    task.spawn(function()
+        local CanChatIdsUpdatedEvent = script.Parent:WaitForChild("CanChatIdsUpdated") :: RemoteEvent
+        local GetCanChaIdsFunction = script.Parent:WaitForChild("GetCanChaIds") :: RemoteFunction
+        CanChatIdsUpdatedEvent.OnClientEvent:Connect(function(CanChatIds: {number})
+            PlayerIcons:_UpdateCanChatIds(CanChatIds)
+        end)
+        PlayerIcons:_UpdateCanChatIds(GetCanChaIdsFunction:InvokeServer() :: {number})
     end)
-    PlayerIcons:_UpdateCanChatIds(LocalPlayer:GetAttribute("CanChatIds") :: string?)
 end
 
 

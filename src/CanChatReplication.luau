@@ -12,6 +12,9 @@ local RunService = game:GetService("RunService")
 local CanChatReplication = {}
 CanChatReplication._Players = Players
 CanChatReplication._CanChatCache = {} :: {[Player]: {number}}
+CanChatReplication._CanChatLastSentValues = {} :: {[Player]: string}
+CanChatReplication._CanChatIdsUpdatedEvent = Instance.new("RemoteEvent")
+CanChatReplication._GetCanChaIdsFunction = Instance.new("RemoteFunction")
 CanChatReplication.__index = CanChatReplication
 
 export type CanChatReplication = typeof(CanChatReplication)
@@ -37,7 +40,12 @@ Updates the replicated values for all players.
 --]]
 function CanChatReplication._UpdateReplicatedValues(self: CanChatReplication): ()
     for Player, CanChatResults in self._CanChatCache do
-        Player:SetAttribute("CanChatIds", table.concat(CanChatResults, ","))
+        local LastSentValues = self._CanChatLastSentValues[Player]
+        if not LastSentValues then continue end --The initial RemoteFunction call has not been sent. This is to avoid sending many events while joining.
+        local NewValues = table.concat(CanChatResults, ",")
+        if LastSentValues == NewValues then continue end --Avoid sending extra events when nothing changed.
+        self._CanChatLastSentValues[Player] = NewValues
+        self._CanChatIdsUpdatedEvent:FireClient(Player, CanChatResults)
     end
 end
 
@@ -101,6 +109,7 @@ Uninitializes a player.
 function CanChatReplication._UninitializePlayer(self: CanChatReplication, Player: Player): ()
     --Remove the player.
     self._CanChatCache[Player] = nil
+    self._CanChatLastSentValues[Player] = nil
 
     --Remove the player from the other entries.
     for OtherPlayer, CanChatResults in self._CanChatCache do
@@ -127,6 +136,19 @@ if RunService:IsRunning() then
     Players.PlayerRemoving:Connect(function(Player)
         CanChatReplication:_UninitializePlayer(Player)
     end)
+
+    --Set up the remote objects.
+    CanChatReplication._CanChatIdsUpdatedEvent.Name = "CanChatIdsUpdated"
+    CanChatReplication._CanChatIdsUpdatedEvent.Parent = script.Parent
+
+    CanChatReplication._GetCanChaIdsFunction.Name = "GetCanChaIds"
+    CanChatReplication._GetCanChaIdsFunction.Parent = script.Parent
+
+    CanChatReplication._GetCanChaIdsFunction.OnServerInvoke = function(Player: Player): {number}
+        local CanChatResults = CanChatReplication._CanChatCache[Player] or {}
+        CanChatReplication._CanChatLastSentValues[Player] = table.concat(CanChatResults, ",") --Must be initialized here for RemoteEvent calls.
+        return CanChatResults
+    end
 
     --Refresh can chat lists in the background.
     --Players are able to verify after joining, and the API seems to default to false on join and eventually return true.
