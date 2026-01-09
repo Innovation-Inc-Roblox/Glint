@@ -59,10 +59,17 @@ function PlayerIcons._UpdateIcon(self: PlayerIcons, Player: Player): ()
         return
     end
 
+    --Get the adornee and re-check if the players can't chat.
+    --In the case GetAdornee yields, it is possible for the previous check to say the players can't chat and get updated after to say they can.
+    local Adornee = self.GetAdornee(Player)
+    if self._CanChatIds[Player.UserId] then
+        self:_RemoveIcon(Player)
+        return
+    end
+
     --Update the icon if it exists, or create a new one.
     --The icon is not shown if the adornee is hidden.
     --Adornee and IconAdornee are separate to ensure the adornee can have events connected later on.
-    local Adornee = self.GetAdornee(Player)
     local IconAdornee = Adornee
     if Adornee and (Adornee.Transparency >= 1 or Adornee.LocalTransparencyModifier >= 1) then
         IconAdornee = nil
