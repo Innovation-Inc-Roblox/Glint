@@ -1,6 +1,7 @@
 --Replicates whether users can chat with each other, since it is server-side.
 --!strict
 
+local JOIN_REFRESH_ATTEMPTS = 3
 local REFRESH_CAN_CHAT_DELAY_SECONDS = 15
 local REFRESH_CAN_CHAT_PLAYERS_PER_STEP = 5
 local REFRESH_CAN_CHAT_STEP_DELAY_SECONDS = 1
@@ -101,6 +102,17 @@ function CanChatReplication._InitializePlayers(self: CanChatReplication, Players
 
     --Update the replicated values.
     self:_UpdateReplicatedValues()
+
+    --Refresh the players immediately with delays.
+    --Due to the API not returning true immediately on join, quick retries are attempted.
+    --No checks are required for the player leaving due to _RefreshPlayer checking if the player is stored.
+    if not RunService:IsRunning() then return end
+    task.spawn(function()
+        for i = 1, JOIN_REFRESH_ATTEMPTS do
+            task.wait(i)
+            self:_RefreshPlayers(PlayersToInitialize)
+        end
+    end)
 end
 
 --[[
